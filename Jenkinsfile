@@ -2,10 +2,11 @@
 pipeline {
     agent any
 
-    environment {
-        APP_NAME = 'devops-app'
-        KUBECONFIG = 'C:\\Users\\USER\\.kube\\config'
-    }
+environment {
+    APP_NAME = 'devops-app'
+    KUBECONFIG = 'C:\\Users\\USER\\.kube\\config'
+    DOCKER_HOST = 'npipe:////./pipe/dockerDesktopLinuxEngine'
+}
 
     stages {
 
