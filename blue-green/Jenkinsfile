@@ -1,0 +1,53 @@
+
+pipeline {
+    agent any
+
+    environment {
+        KUBECONFIG = 'C:\\Users\\USER\\.kube\\config'
+        DOCKER_HOST = 'npipe:////./pipe/dockerDesktopLinuxEngine'
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/suryanshhhsingh/devops-cicd-project.git'
+            }
+        }
+
+        stage('Build Blue and Green Images') {
+            steps {
+                bat 'docker build -t blue-app:v1 ./blue-green/blue'
+                bat 'docker build -t green-app:v2 ./blue-green/green'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                bat 'kubectl apply -f blue-green/kubernetes/blue-green.yaml'
+            }
+        }
+
+        stage('Verify Deployments') {
+            steps {
+                bat 'kubectl rollout status deployment/blue-deployment'
+                bat 'kubectl rollout status deployment/green-deployment'
+                bat 'kubectl get pods'
+            }
+        }
+
+        stage('Switch Traffic to Green') {
+            steps {
+                bat 'kubectl set selector service/blue-green-service app=blue-green-app,version=green'
+            }
+        }
+
+        stage('Verify Green Deployment') {
+            steps {
+                bat 'kubectl describe service blue-green-service'
+                bat 'kubectl get endpoints blue-green-service'
+            }
+        }
+    }
+}
